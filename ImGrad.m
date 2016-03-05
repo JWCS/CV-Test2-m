@@ -8,5 +8,5 @@ function A = ImGrad( Im )
     B(2:(X-1), 2:(Y-1), 1:Z) =  ...
         abs( Im(3:X, 2:Y-1, 1:Z) - Im(1:X-2, 2:Y-1, 1:Z) )...
         + abs( Im(2:X-1, 3:Y, 1:Z) - Im(2:X-1, 1:Y-2, 1:Z) );
-    A = sum(B,3,'native');
+    A = flipud( sum(B,3,'native') );
 end
