@@ -8,6 +8,6 @@ function Im2 = FilterMeanV2( Im, CK )
      %   Im2(:,:,i) = conv2( double( Im(:,:,i) ), double(CK) );
     %end
     %Assume XxYx1 double matrix
-    Im2 = conv2( Im, CK );
+    Im2 = conv2( Im, CK, 'same' );
 end
 
