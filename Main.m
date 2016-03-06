@@ -8,6 +8,7 @@ tic
 %filterScale = 3; %by 3 mean
 sobel = [1 2 1; 0 0 0; -1 -2 -1];
 side = 3;
+delIntenseFilter = 20;
 meanKernel = double( ones( side, side ) ) ...
     / double( side^2 ); % sidexside mean kernel
 Im = rot90( imread('H1.jpg'), -1 );
@@ -17,7 +18,7 @@ Im = rot90( imread('H1.jpg'), -1 );
  %   ImGrad( ImGrad ( Im ) ), meanKernel );%, sobel );
 Im3 = ImGrad( FilterMeanV2( double(rgb2gray(Im)), meanKernel ) );
 Im4 = uint8(Im3);%(1420:1480,940:1010));
-Im4(Im4<6) = 0;
+Im4( Im4 < delIntenseFilter ) = 0;
 image( Im4 )
 hold on
 %contour( Im3, 1 )
