@@ -1,4 +1,4 @@
-function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength )
+function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength, lineEndRange )
 %LINETRACE This should go through the image and trace out the objects
 %   It would be dificult to have it only analyze the lines I want, and 
 %   then to follow them in the right direction. 
@@ -21,8 +21,8 @@ function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength )
                     p1 = p2;
                     [x1, y1, x2, y2, struct, dir] = Mat2Search( p1, v, maxDist, X, Y );
                     x1=uint16(x1);y1=uint16(y1);x2=uint16(x2);y2=uint16(y2);
-                    [xH, yH, allZ] = nextHigh( x1, y1, x2, y2, struct, ...
-                                        dir, p2, maxDist, seen.*ReducedIm);
+                    [xH, yH, allZ] = nextHigh( x1, y1, x2, y2, struct, dir, ...
+                                        v, p1, maxDist, seen.*ReducedIm, lineEndRange);
                     p2 = [xH, yH];
                     seen( x1:x2, y1:y2 ) = 0; %Might be a better checkoff
                     %Room for improvement in line above, it clears extra +s
@@ -35,8 +35,8 @@ function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength )
                         else
                             %Add n to list of lengths for lines
                             Lengths(lineNum, 1) = uint16( n );
-                            seen( Lines(1, 1, lineNum), Lines(1, 2, lineNum)) =1;
-                            seen( Lines(n-1, 1, lineNum), Lines(n-1, 2, lineNum)) =1;
+                            %seen( Lines(1, 1, lineNum), Lines(1, 2, lineNum)) =1;
+                            %seen( Lines(n-1, 1, lineNum), Lines(n-1, 2, lineNum)) =1;
                         end
                     else
                         n = n + 1;
@@ -50,16 +50,30 @@ function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength )
     end
     
 end %Have nextHigh  search Lines for an element that already fits into space
-function [ xN, yN, allZ ] = nextHigh( x1, y1, x2, y2, struct, dir, ...
-                                            p2, maxDist, Im )
+function [ xN, yN, allZ ] = nextHigh( x1, y1, x2, y2, struct, dir, v, ...
+                                            p2, maxDist, Im, LineEndRange )
 %nextHigh Returns xN, yN point of the highest ~= 0 point in the mat
     %C passes in this info from Mat2Search
     %disp('x1, y1, x2, y2, struct, dir, size(Im)');
     %disp(x1); disp(y1); disp(x2); disp(y2); disp(struct); disp(dir); disp(size(Im));
-    %if exist('Lines','var')&&...
-     %   ((Lines(:,1,:)>=x1 && Lines(:,1,:)<=x2)&&(Lines(:,2,:)>=y1 && Lines(:,2,:)<=y2))
-        
-   % else
+    attach = false;
+    %[X1, Y1, X2, Y2, ~, ~]=Mat2Search(p2, v, LineEndRange, %could try this
+    %later
+    if exist('Lines','var')
+        for n = 1:size(Lines,1)
+            for z = size(Lines,3)
+                if ((Lines(n,1,z)>=x1-LineEndRange &&...
+                     Lines(n,1,z)<=x2+LineEndRange)&&...
+                    (Lines(n,2,z)>=y1-LineEndRange &&...
+                     Lines(n,2,z)<=y2+LineEndRange))
+                        xN = Lines(n,1,z); yN = Lines(n,2,z);
+                end
+            end
+        end
+    end
+    if exist('xN','var')&&exist('yN','var')&&attach
+        %already wrote to xN and yN, so the rest doesn't execute
+    else
         Im1Col = Im(x1:x2,y1:y2); %Sub mat to search of Im
         [ ~, I ] = max(Im1Col(:)); %Indices fo the max of above
         [ px, py ] = ind2sub( size( Im1Col ), I ); %Indices to subscripts
@@ -69,7 +83,7 @@ function [ xN, yN, allZ ] = nextHigh( x1, y1, x2, y2, struct, dir, ...
         else
             allZ = false;
         end
-   % end
+    end
 end
 function [pX, pY] = searchMat2Im( p0, px, py, maxDist, struct, dir)
     if struct == 1
