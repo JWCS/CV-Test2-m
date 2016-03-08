@@ -1,9 +1,11 @@
-function [Lines, Lengths] = LineTrace( ReducedIm, maxDist )
+function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength )
 %LINETRACE This should go through the image and trace out the objects
 %   It would be dificult to have it only analyze the lines I want, and 
 %   then to follow them in the right direction. 
     [X, Y] = size( ReducedIm );%also assuming ReducedIm is uint8
     seen = uint8( ReducedIm > 0 );
+    %Lines = zeros(100, 2, 150, 'uint16');
+    %Lengths = zeros(150, 1, 'uint8');
     %p2 = ReducedIm(11,11);
     lineNum = 0;
     for x = 1:X
@@ -17,19 +19,28 @@ function [Lines, Lengths] = LineTrace( ReducedIm, maxDist )
                 while onLine
                     v = p2 - p1;
                     p1 = p2;
-                    C = Mat2Search( p2, v, maxDist, X, Y );
-                    [xN, yN, allZ] = nextHigh( C, p2, maxDist, seen.*ReducedIm);
-                    p2 = [xN, yN];
-                    seen( C(1):C(3), C(2):C(4) ) = 0; %Might be a better checkoff
+                    [x1, y1, x2, y2, struct, dir] = Mat2Search( p1, v, maxDist, X, Y );
+                    x1=uint16(x1);y1=uint16(y1);x2=uint16(x2);y2=uint16(y2);
+                    [xH, yH, allZ] = nextHigh( x1, y1, x2, y2, struct, ...
+                                        dir, p2, maxDist, seen.*ReducedIm);
+                    p2 = [xH, yH];
+                    seen( x1:x2, y1:y2 ) = 0; %Might be a better checkoff
+                    %Room for improvement in line above, it clears extra +s
                     if allZ || (p2(1)-p1(1)==0 && p2(2)-p1(2)==0)
                         onLine = false;
-                        %Add n to list of lengths for lines
-                        Lengths(lineNum) = n;
+                        if n < minLineLength %length < minLineLength
+                            %Get rid of useless data
+                            Lines(1:n, 1:2, lineNum) = 0;
+                            lineNum = lineNum - 1;
+                        else
+                            %Add n to list of lengths for lines
+                            Lengths(lineNum, 1) = uint16( n );
+                        end
                     else
                         n = n + 1;
                         %Add p2 to list of points for this run
-                        Lines(n, 1, lineNum) = xN; 
-                        Lines(n, 2, lineNum) = yN; 
+                        Lines(n, 1, lineNum) = uint16( xH ); 
+                        Lines(n, 2, lineNum) = uint16( yH ); 
                     end
                 end
             end
@@ -37,11 +48,12 @@ function [Lines, Lengths] = LineTrace( ReducedIm, maxDist )
     end
     
 end
-function [ xN, yN, allZ ] = nextHigh( C, p2, maxDist, Im )
+function [ xN, yN, allZ ] = nextHigh( x1, y1, x2, y2, struct, dir, ...
+                                            p2, maxDist, Im )
 %nextHigh Returns xN, yN point of the highest ~= 0 point in the mat
     %C passes in this info from Mat2Search
-    x1 = uint8(C(1)); y1 = uint8(C(2)); x2 = uint8(C(3)); y2 = uint8(C(4)); 
-    struct = C(5); dir = C(6);
+    %disp('x1, y1, x2, y2, struct, dir, size(Im)');
+    %disp(x1); disp(y1); disp(x2); disp(y2); disp(struct); disp(dir); disp(size(Im));
     Im1Col = Im(x1:x2,y1:y2); %Sub mat to search of Im
     [ ~, I ] = max(Im1Col(:)); %Indices fo the max of above
     [ px, py ] = ind2sub( size( Im1Col ), I ); %Indices to subscripts

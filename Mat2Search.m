@@ -1,7 +1,8 @@
-function A = Mat2Search(  p, v, maxDist, maxX, maxY  )
+function [x1, y1, x2, y2, struct, dir] = Mat2Search(  p, v, maxDist, maxX, maxY  )
 %MAT2SEARCH This finds the Mat to search, based on givens; maxDist==even 
 %   Detailed explanation goes here
     x = p(1); y = p(2);
+    %disp('Mat2Search x y='); disp(x); disp(y);
     [struct, dir] = Case(v);
     if(struct==1)
         switch dir
@@ -61,28 +62,27 @@ function A = Mat2Search(  p, v, maxDist, maxX, maxY  )
     if x2 > maxX
         x2 = maxX;
     end
-    if x2 < 0
-        x2 = 0;
+    if x2 < 1
+        x2 = 1;
     end
     if x1 > maxX
         x1 = maxX;
     end
-    if x1 < 0
-        x1 = 0;
+    if x1 < 1
+        x1 = 1;
     end
     if y1 > maxY
         y1 = maxY;
     end
-    if y1 < 0
-        y1 = 0;
+    if y1 < 1
+        y1 = 1;
     end
-    if y2 < 0
-        y2 = 0;
+    if y2 < 1
+        y2 = 1;
     end
-    if y1 > maxY
-        y1 = maxY;
+    if y2 > maxY
+        y2 = maxY;
     end
-    A = [x1, y1, x2, y2, struct, dir];
 end
 
 function [struct, dir] = Case(v)
