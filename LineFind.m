@@ -35,6 +35,8 @@ function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength )
                         else
                             %Add n to list of lengths for lines
                             Lengths(lineNum, 1) = uint16( n );
+                            seen( Lines(1, 1, lineNum), Lines(1, 2, lineNum)) =1;
+                            seen( Lines(n-1, 1, lineNum), Lines(n-1, 2, lineNum)) =1;
                         end
                     else
                         n = n + 1;
@@ -47,22 +49,27 @@ function [Lines, Lengths] = LineFind( ReducedIm, maxDist, minLineLength )
         end
     end
     
-end
+end %Have nextHigh  search Lines for an element that already fits into space
 function [ xN, yN, allZ ] = nextHigh( x1, y1, x2, y2, struct, dir, ...
                                             p2, maxDist, Im )
 %nextHigh Returns xN, yN point of the highest ~= 0 point in the mat
     %C passes in this info from Mat2Search
     %disp('x1, y1, x2, y2, struct, dir, size(Im)');
     %disp(x1); disp(y1); disp(x2); disp(y2); disp(struct); disp(dir); disp(size(Im));
-    Im1Col = Im(x1:x2,y1:y2); %Sub mat to search of Im
-    [ ~, I ] = max(Im1Col(:)); %Indices fo the max of above
-    [ px, py ] = ind2sub( size( Im1Col ), I ); %Indices to subscripts
-    [xN, yN] = searchMat2Im(p2, px, py, maxDist, struct, dir);%To Coordinates
-    if sum(sum(Im1Col),2) == 0
-        allZ = true;
-    else
-        allZ = false;
-    end
+    %if exist('Lines','var')&&...
+     %   ((Lines(:,1,:)>=x1 && Lines(:,1,:)<=x2)&&(Lines(:,2,:)>=y1 && Lines(:,2,:)<=y2))
+        
+   % else
+        Im1Col = Im(x1:x2,y1:y2); %Sub mat to search of Im
+        [ ~, I ] = max(Im1Col(:)); %Indices fo the max of above
+        [ px, py ] = ind2sub( size( Im1Col ), I ); %Indices to subscripts
+        [xN, yN] = searchMat2Im(p2, px, py, maxDist, struct, dir);%To Coordinates
+        if sum(sum(Im1Col),2) == 0
+            allZ = true;
+        else
+            allZ = false;
+        end
+   % end
 end
 function [pX, pY] = searchMat2Im( p0, px, py, maxDist, struct, dir)
     if struct == 1
