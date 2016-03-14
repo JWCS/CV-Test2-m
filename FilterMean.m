@@ -10,7 +10,7 @@ function Im2 = FilterMean(Im, S)
     end
     c = (S - 1) / 2;%The cropping factor from the edge (radius from s)
     Im2(1+c:X-c, 1+c:Y-c, 1:Z) = ...
-        getXyAv( subMat( Im(:,:,1:Z), 1+c:X-c, 1+c:Y-c, S ));
+        getXyAv( subMat( Im(1:X, 1:Y ,1:Z), 1+c:X-c, 1+c:Y-c, S ));
     toc
 end
 function A = getXyAv(subMat)

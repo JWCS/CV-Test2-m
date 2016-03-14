@@ -34,7 +34,7 @@ meanLineLength = mean( Lengths );
 image( Im4 )
 hold on
 for z = 1:size(Lines,3)-1
-    plot( Lines(1:Lengths(z),2,z), Lines( 1:Lengths(z),1,z ), 'Color', 'k', 'LineWidth', 3 );
+    plot( Lines(1:Lengths(z),2,z), Lines( 1:Lengths(z),1,z ), 'Color', 'k', 'LineWidth', 1 );
 end
 hold off
 toc

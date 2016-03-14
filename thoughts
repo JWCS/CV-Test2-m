@@ -1,0 +1,2 @@
+11∕03∕2016
+PreSpring break; v0.1 completed. Next step fix edge problems with expansion. Effectively, have a gradient function and threshold function in play, as well as a flawed edge tracer: edge thinning & edge following prof said, finish in spring break;
